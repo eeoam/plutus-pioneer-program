@@ -6,7 +6,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module FortyTwo where
+module FortyTwoTyped where
 
 
 import Plutus.V2.Ledger.Api qualified as PlutusV2
@@ -20,14 +20,12 @@ import Utilities (wrapValidator, writeValidatorToFile)
 
 -- | This validator only succeeds if the redeemer is equal to 42.
 {-# INLINABLE mk42Validator #-}
-mk42Validator :: BuiltinData -> BuiltinData -> BuiltinData -> ()
-mk42Validator datum redeemer scriptContext 
-    | redeemer == Builtins.mkI 42 = ()
-    | otherwise                   = traceError "expected 42"
+mk42Validator :: () -> Integer -> PlutusV2.ScriptContext -> Bool
+mk42Validator datum redeemer scriptContext = traceIfFalse "expected 42" $  redeemer == 42
 
 validator :: PlutusV2.Validator
-validator = PlutusV2.mkValidatorScript $$(PlutusTx.compile[|| mk42Validator ||])
+validator = PlutusV2.mkValidatorScript $$(PlutusTx.compile[|| wrapValidator mk42Validator ||])
 
 saveVal :: IO ()
-saveVal = writeValidatorToFile "./assets/fortytwo.plutus" validator
+saveVal = writeValidatorToFile "./assets/fortytwotyped.plutus" validator
 
