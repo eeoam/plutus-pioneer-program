@@ -22,7 +22,7 @@ import Plutus.V1.Ledger.Interval (contains)
 import Plutus.V2.Ledger.Api (POSIXTime, PubKeyHash,
                              ScriptContext (scriptContextTxInfo),
                              TxInfo (txInfoValidRange),
-                             Validator, from, mkValidatorScript)
+                             Validator, from, to, mkValidatorScript)
 import Plutus.V2.Ledger.Api qualified as PlutusV2
 import Plutus.V2.Ledger.Contexts (txSignedBy)
 import PlutusTx (BuiltinData, compile, unstableMakeIsData
@@ -65,13 +65,13 @@ mkValidator dat () ctx =
         beneficiary1Signed = txSignedBy info $ beneficiary1 dat
 
         beforeOrAtDeadline :: Bool
-        beforeOrAtDeadline = t `after` txInfoValidRange info
+        beforeOrAtDeadline = to deadline `contains` txInfoValidRange info
 
         beneficiary2Signed :: Bool
         beneficiary2Signed = txSignedBy info $ beneficiary2 dat
 
         afterDeadline :: Bool
-        afterDeadline = t `before` txInfoValidRange info
+        afterDeadline = from deadline `contains` txInfoValidRange info
 
 {-# INLINABLE mkWrappedValidator #-}
 mkWrappedValidator :: BuiltinData -> BuiltinData -> BuiltinData -> ()
